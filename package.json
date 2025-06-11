@@ -1,7 +1,7 @@
 {
   "name": "unreallife-launcher",
   "private": true,
-  "version": "1.0.9",
+  "version": "1.0.11",
   "type": "module",
   "main": "dist-electron/main.js",
   "author": "Lielce",
@@ -13,7 +13,7 @@
       {
         "provider": "github",
         "owner": "UnrealLife-Git",
-        "repo": "A3URL_Launcher"
+        "repo": "Launcher"
       }
     ],
     "directories": {
