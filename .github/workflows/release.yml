@@ -1,0 +1,33 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*' # Exemple : v1.0.2
+
+jobs:
+  build:
+    runs-on: windows-latest
+    defaults:
+      run:
+        working-directory: Unreallife_Launcher
+
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+
+      - name: 📦 Install dependencies
+        run: npm ci
+
+      - name: 🛠 Build App
+        run: npm run build
+
+      - name: Publish with electron-builder
+        run: npx electron-builder --windows nsis --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}

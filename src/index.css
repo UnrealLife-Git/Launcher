@@ -1,0 +1,42 @@
+/* Centrage des cercles */
+.slick-dots {
+  position: absolute;
+  bottom: 16px;
+  width: 100%;
+  display: flex !important;
+  justify-content: center;
+  align-items: center;
+  padding: 0;
+  margin: 0;
+  z-index: 5;
+}
+
+/* Style des cercles inactifs */
+.slick-dots li button:before {
+  font-size: 14px;                      /* ← plus gros */
+  color: rgba(255, 255, 255, 0.75);     /* ← plus opaque */
+  transition: color 0.3s ease;
+}
+
+/* Style du cercle actif */
+.slick-dots li.slick-active button:before {
+  color: #2196f3;                       /* ← bleu UnrealLife */
+  font-size: 16px;
+}
+
+.drag-zone {
+  -webkit-app-region: drag;
+}
+
+.no-drag {
+  -webkit-app-region: no-drag;
+}
+
+html, body, #root {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  overflow: hidden; /* ✅ EMPÊCHE LE SCROLL GLOBAL */
+}
+
+
