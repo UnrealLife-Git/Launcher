@@ -9,9 +9,10 @@ declare global {
   }
 
   interface Window {
-    updater: {
+    electronAPI: {
       onUpdateAvailable: (callback: () => void) => void;
       onUpdateDownloaded: (callback: () => void) => void;
+      restartApp: () => void;
     };
     api: {
       getNewsMarkdown: () => Promise<string>;

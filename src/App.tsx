@@ -31,16 +31,8 @@ export function App() {
   useEffect(() => {
     const saved = localStorage.getItem('arma3Path');
     if (saved) setGamePath(saved);
-    window.updater?.onUpdateAvailable(() => {
-      alert("Une mise à jour est disponible, elle sera téléchargée en arrière-plan.");
-    });
-  
-    window.updater?.onUpdateDownloaded(() => {
-      const confirmed = window.confirm("La mise à jour a été téléchargée. Redémarrer maintenant ?");
-      if (confirmed) {
-        window.api.send('restart-app');
-      }
-    });
+    window.electronAPI.onUpdateAvailable(() => {});
+    window.electronAPI.onUpdateDownloaded(() => {});
   }, []);
 
   return (

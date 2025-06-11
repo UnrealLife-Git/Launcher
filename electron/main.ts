@@ -66,6 +66,8 @@ function createWindow() {
     // win.loadFile('dist/index.html')
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
+
+  autoUpdater.checkForUpdatesAndNotify();
 }
 
 // Quit when all windows are closed, except on macOS. There, it's common
@@ -89,15 +91,21 @@ app.on('activate', () => {
 app.whenReady().then(() => {
   createWindow();
 
-  autoUpdater.checkForUpdatesAndNotify();
+  setInterval(() => {
+    autoUpdater.checkForUpdatesAndNotify();
+  }, 1000 * 60 * 60);
 
-  autoUpdater.on('update-available', () => {
-    win?.webContents.send('update_available');
-  });
+  autoUpdater.autoDownload = true; // C'est la valeur par défaut, mais important à forcer
 
   autoUpdater.on('update-downloaded', () => {
-    win?.webContents.send('update_downloaded');
+    setTimeout(() => {
+      autoUpdater.quitAndInstall();
+    }, 5000); // Laisse 5 secondes à l'utilisateur avant redémarrage automatique
   });
+
+  // 🔁 Vérifie immédiatement s'il y a une mise à jour
+  autoUpdater.checkForUpdates();
+  
 });
 
 ipcMain.on('close-app', () => {

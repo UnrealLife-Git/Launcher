@@ -2,6 +2,12 @@
 import { ipcRenderer, contextBridge } from 'electron';
 //import path from 'path';
 
+contextBridge.exposeInMainWorld('electronAPI', {
+  onUpdateAvailable: (callback: () => void) => ipcRenderer.on('update_available', callback),
+  onUpdateDownloaded: (callback: () => void) => ipcRenderer.on('update_downloaded', callback),
+  restartApp: () => ipcRenderer.send('restart_app')
+});
+
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
     const [channel, listener] = args;
