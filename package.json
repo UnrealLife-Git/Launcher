@@ -1,7 +1,7 @@
 {
   "name": "unreallife-launcher",
   "private": true,
-  "version": "1.0.14",
+  "version": "1.0.15",
   "type": "module",
   "main": "dist-electron/main.js",
   "author": "Lielce",
@@ -18,7 +18,7 @@
       }
     ],
     "directories": {
-      "output": "dist"
+      "output": "release"
     },
     "extraFiles": [
       "./dist/assets/**"
