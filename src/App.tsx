@@ -57,7 +57,7 @@ function MainApp({ gamePath }: { gamePath: string }) {
       }
       
     } catch (error) {
-      console.error('Erreur lors de l\'ouverture du lien:', error);
+      console.error('[Erreur] lors de l\'ouverture du lien:', error);
     }
   };
 
