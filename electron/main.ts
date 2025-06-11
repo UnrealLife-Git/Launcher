@@ -14,8 +14,6 @@ import { autoUpdater } from 'electron-updater';
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
-console.log('✅ preload chargé, api exposée');
-
 
 // The built directory structure
 //

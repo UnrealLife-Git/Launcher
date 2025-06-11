@@ -14,6 +14,7 @@ import NewsContent from './components/NewsContent';
 import SettingsContent from './components/SettingsContent';
 import ModSyncPanel from './components/ModSyncPanel';
 import ModSyncManager from './components/ModSyncManager';
+import Logo from '/assets/logo.png';
 
 export function App() {
   const [gamePath, setGamePath] = useState('');
@@ -84,7 +85,7 @@ function MainApp({ gamePath }: { gamePath: string }) {
       >
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box sx={{ display: 'flex', alignItems: 'center' }}>
-            <img src="/assets/logo.png" alt="UnrealLife" height={90} />
+            <img src={Logo} alt="UnrealLife" height={90} />
           </Box>
 
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, /*'-webkit-app-region': 'no-drag'*/ }}>

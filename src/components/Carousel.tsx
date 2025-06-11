@@ -1,12 +1,11 @@
 import Slider from 'react-slick';
 import { Box } from '@mui/material';
+import image1 from '/assets/carousel/image_1.png';
+import image2 from '/assets/carousel/image_2.png';
+import image4 from '/assets/carousel/image_4.jpg';
+import image5 from '/assets/carousel/image_5.png';
 
-const images = [
-    '/assets/carousel/image_1.png',
-    '/assets/carousel/image_2.png',
-    '/assets/carousel/image_4.jpg',
-    '/assets/carousel/image_5.png'
-];
+const images = [image1, image2, image4, image5];
 
 export function Carousel() {
     const settings = {

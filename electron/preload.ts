@@ -1,5 +1,6 @@
 // --- preload.ts ---
 import { ipcRenderer, contextBridge } from 'electron';
+//import path from 'path';
 
 contextBridge.exposeInMainWorld('ipcRenderer', {
   on(...args: Parameters<typeof ipcRenderer.on>) {
