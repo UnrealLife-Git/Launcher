@@ -8,9 +8,6 @@ on:
 jobs:
   build:
     runs-on: windows-latest
-    defaults:
-      run:
-        working-directory: Unreallife_Launcher
 
     steps:
       - name: 📥 Checkout code
