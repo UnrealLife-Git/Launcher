@@ -23,6 +23,8 @@ jobs:
 
       - name: 🛠 Build App
         run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
       - name: Publish with electron-builder
         run: npx electron-builder --windows nsis --publish never
