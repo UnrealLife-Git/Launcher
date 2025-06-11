@@ -27,7 +27,8 @@
       "dist/",
       "dist-electron/",
       "!**/*.md",
-      "!src/"
+      "!src/",
+      "assets/**/*"
     ],
     "win": {
       "target": "nsis",
