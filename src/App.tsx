@@ -15,6 +15,15 @@ import SettingsContent from './components/SettingsContent';
 import ModSyncPanel from './components/ModSyncPanel';
 import ModSyncManager from './components/ModSyncManager';
 import Logo from '/assets/logo.png';
+import discordIcon from '/assets/icons/discord.png';
+import intranetIcon from '/assets/icons/intranet.png';
+import teamspeakIcon from '/assets/icons/teamspeak.png';
+
+const ICONS: Record<string, string> = {
+  discord: discordIcon,
+  intranet: intranetIcon,
+  teamspeak: teamspeakIcon,
+};
 
 export function App() {
   const [gamePath, setGamePath] = useState('');
@@ -138,7 +147,7 @@ function MainApp({ gamePath }: { gamePath: string }) {
                           },
                         }}
                       >
-                        <img src={`/assets/icons/${icon}.png`} alt={icon} style={{ width: 42, height: 42 }} />
+                        <img src={ICONS[icon]} alt={icon} style={{ width: 42, height: 42 }} />
                       </IconButton>
                     </Box>
                   ))}
