@@ -1,7 +1,7 @@
 {
   "name": "unreallife-launcher",
   "private": true,
-  "version": "1.0.15",
+  "version": "1.0.16",
   "type": "module",
   "main": "dist-electron/main.js",
   "author": "Lielce",
@@ -24,9 +24,10 @@
       "./dist/assets/**"
     ],
     "files": [
-      "./dist/**/*",
-      "main.js",
-      "preload.js"
+      "dist/",
+      "dist-electron/",
+      "!**/*.md",
+      "!src/"
     ],
     "win": {
       "target": "nsis",
