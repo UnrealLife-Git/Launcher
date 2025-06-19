@@ -345,3 +345,22 @@ ipcMain.handle('launch-game', async (_, gamePath: string) => {
 ipcMain.handle('get-app-version', () => {
   return app.getVersion();
 });
+
+ipcMain.handle('list-files', async (_event, directory: string) => {
+  try {
+    return fs.readdirSync(directory).filter(f => fs.statSync(path.join(directory, f)).isFile());
+  } catch {
+    return [];
+  }
+});
+
+ipcMain.handle('delete-files', async (_event, files: string[], directory: string) => {
+  const deleted: string[] = [];
+  for (const file of files) {
+    try {
+      fs.unlinkSync(path.join(directory, file));
+      deleted.push(file);
+    } catch {}
+  }
+  return deleted;
+});

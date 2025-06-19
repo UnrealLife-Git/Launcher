@@ -55,29 +55,6 @@ export async function checkMods(basePath: string): Promise<ModCheckResult> {
   return { toDownload, toDelete };
 }
 
-export async function downloadFile(mod: ModFile, destinationDir: string, onProgress?: (percent: number) => void): Promise<void> {
-  const url = `http://188.165.200.136/modsList/${mod.name}`;
-  const dest = path.join(destinationDir, mod.name);
-
-  const res = await fetch(url);
-  if (!res.ok || !res.body) throw new Error(`Erreur téléchargement: ${mod.name}`);
-
-  const fileStream = fs.createWriteStream(dest);
-  const reader = res.body.getReader();
-  let received = 0;
-  const total = mod.size;
-
-  while (true) {
-    const { done, value } = await reader.read();
-    if (done) break;
-    fileStream.write(value);
-    received += value.length;
-    if (onProgress) onProgress((received / total) * 100);
-  }
-
-  fileStream.close();
-}
-
 export async function deleteFiles(files: string[], directory: string) {
   for (const file of files) {
     const filePath = path.join(directory, file);

@@ -54,4 +54,6 @@ contextBridge.exposeInMainWorld('api', {
   launchGame: (gamePath: string) => ipcRenderer.invoke('launch-game', gamePath),
   send: (...args: Parameters<typeof ipcRenderer.send>) => ipcRenderer.send(...args),
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
+  listFiles: (directory: string) => ipcRenderer.invoke('list-files', directory),
+  deleteFiles: (files: string[], directory: string) => ipcRenderer.invoke('delete-files', files, directory),
 });

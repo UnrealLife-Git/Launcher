@@ -70,6 +70,16 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
     const missing: ModEntry[] = [];
     let totalSize = 0;
 
+    // --- Ajout : récupère la liste des fichiers locaux
+    const localFiles = await window.api.listFiles(localPath);
+    const remoteNames = new Set(remoteMods.map(m => m.name));
+    const toDelete = localFiles.filter((f: string) => !remoteNames.has(f));
+
+    if (toDelete.length > 0) {
+      await window.api.deleteFiles(toDelete, localPath);
+      console.log(`[CLEAN] Fichiers obsolètes supprimés :`, toDelete);
+    }
+
     for (const mod of remoteMods) {
       const filePath = `${localPath}/${mod.name}`;
       const exists = await window.api.checkFileExists(filePath);

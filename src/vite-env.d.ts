@@ -36,6 +36,8 @@ declare global {
       launchGame: (basePath: string) => Promise<boolean>;
       send: (channel: string, ...args: any[]) => void;
       getAppVersion: () => Promise<string>;
+      listFiles: (directory: string) => Promise<string[]>;
+      deleteFiles: (files: string[], directory: string) => Promise<string[]>;
 
     };
   }
