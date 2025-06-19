@@ -36,7 +36,7 @@ export function App() {
   useEffect(() => {
     const saved = localStorage.getItem('arma3Path');
     if (!saved) setShowSnackbar(true) // Si pas de chemin enregistré, on affiche le snackbar
-    setGamePath(saved || ''); // Mettre à jour le chemin du jeu
+    setGamePath(saved || '');
     window.electronAPI.onUpdateAvailable(() => {});
     window.electronAPI.onUpdateDownloaded(() => {});
   }, []);
