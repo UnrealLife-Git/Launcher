@@ -342,3 +342,7 @@ ipcMain.handle('launch-game', async (_, gamePath: string) => {
 
   return 'Jeu lancé';
 });
+
+ipcMain.handle('get-app-version', () => {
+  return app.getVersion();
+});

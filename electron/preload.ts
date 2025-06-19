@@ -53,4 +53,5 @@ contextBridge.exposeInMainWorld('api', {
   getOtherResources: () => ipcRenderer.invoke('get-other-resources'),
   launchGame: (gamePath: string) => ipcRenderer.invoke('launch-game', gamePath),
   send: (...args: Parameters<typeof ipcRenderer.send>) => ipcRenderer.send(...args),
+  getAppVersion: () => ipcRenderer.invoke('get-app-version'),
 });

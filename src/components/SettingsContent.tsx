@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react';
 export default function SettingsContent({ onGamePathChange }: { onGamePathChange?: (path: string) => void }) {
   const [gamePath, setGamePath] = useState('');
   const [error, setError] = useState('');
+  const [launcherVersion, setLauncherVersion] = useState<string>('dev');
 
   // Valeur par défaut
   const defaultPath = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Arma 3';
@@ -12,6 +13,8 @@ export default function SettingsContent({ onGamePathChange }: { onGamePathChange
   useEffect(() => {
     const saved = localStorage.getItem('arma3Path');
     setGamePath(saved || defaultPath);
+    // Récupère la version du launcher via l'API preload
+    window.api.getAppVersion?.().then(setLauncherVersion);
   }, []);
 
   const handleBrowse = async () => {
@@ -74,6 +77,12 @@ export default function SettingsContent({ onGamePathChange }: { onGamePathChange
           <Button variant="contained" onClick={handleSave}>SAUVEGARDER</Button>
         </Stack>
       </Stack>
+      {/* Numéro de version en bas de page */}
+      <Box sx={{ position: 'absolute', bottom: 8, left: 0, width: '100%', textAlign: 'center', color: 'gray' }}>
+        <Typography variant="body2">
+          Version du launcher : {launcherVersion}
+        </Typography>
+      </Box>
     </Box>
   );
 }

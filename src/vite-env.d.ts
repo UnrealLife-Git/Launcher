@@ -35,6 +35,7 @@ declare global {
       getOtherResources: () => Promise<{ name: string; size: number }[]>;
       launchGame: (basePath: string) => Promise<boolean>;
       send: (channel: string, ...args: any[]) => void;
+      getAppVersion: () => Promise<string>;
 
     };
   }
