@@ -1,7 +1,7 @@
 import { Box, Button, Stack, TextField, Typography } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-export default function SettingsContent() {
+export default function SettingsContent({ onGamePathChange }: { onGamePathChange?: (path: string) => void }) {
   const [gamePath, setGamePath] = useState('');
   const [error, setError] = useState('');
 
@@ -33,6 +33,7 @@ export default function SettingsContent() {
       }
 
       localStorage.setItem('arma3Path', gamePath);
+      if (onGamePathChange) onGamePathChange(gamePath); // ← Ajouté
     } catch (e) {
       console.error(e);
       setError("Erreur lors de la vérification du fichier.");

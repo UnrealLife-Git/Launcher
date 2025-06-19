@@ -18,6 +18,8 @@ import Logo from '/assets/logo.png';
 import discordIcon from '/assets/icons/discord.png';
 import intranetIcon from '/assets/icons/intranet.png';
 import teamspeakIcon from '/assets/icons/teamspeak.png';
+import Snackbar from '@mui/material/Snackbar';
+import Alert from '@mui/material/Alert';
 
 const ICONS: Record<string, string> = {
   discord: discordIcon,
@@ -27,22 +29,36 @@ const ICONS: Record<string, string> = {
 
 export function App() {
   const [gamePath, setGamePath] = useState('');
+  const [showSnackbar, setShowSnackbar] = useState(false);
+  window.electronAPI.onUpdateAvailable(() => {});
+  window.electronAPI.onUpdateDownloaded(() => {});
 
   useEffect(() => {
     const saved = localStorage.getItem('arma3Path');
-    if (saved) setGamePath(saved);
+    if (!saved) setShowSnackbar(true) // Si pas de chemin enregistré, on affiche le snackbar
+    setGamePath(saved || ''); // Mettre à jour le chemin du jeu
     window.electronAPI.onUpdateAvailable(() => {});
     window.electronAPI.onUpdateDownloaded(() => {});
   }, []);
 
   return (
     <ModSyncManager basePath={gamePath}>
-      <MainApp gamePath={gamePath} />
+      <MainApp gamePath={gamePath} setGamePath={setGamePath} />
+      <Snackbar
+        open={showSnackbar}
+        autoHideDuration={6000}
+        onClose={() => setShowSnackbar(false)}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      >
+        <Alert severity="warning" variant="filled" onClose={() => setShowSnackbar(false)}>
+          Merci de configurer le chemin d’accès à Arma 3 dans les paramètres ⚙️
+        </Alert>
+      </Snackbar>
     </ModSyncManager>
   );
 }
 
-function MainApp({ gamePath }: { gamePath: string }) {
+function MainApp({ gamePath, setGamePath }: { gamePath: string; setGamePath: (path: string) => void }) {
   const [activeTab, setActiveTab] = useState<'home' | 'news' | 'settings'>('home');
   //const { progress, isDownloading, currentFile, fileProgress } = useModSync();
 
@@ -174,7 +190,7 @@ function MainApp({ gamePath }: { gamePath: string }) {
 
         {activeTab === 'settings' && (
           <Box sx={{ flex: 1, overflowY: 'auto', px: 6, py: 3 }}>
-            <SettingsContent />
+            <SettingsContent onGamePathChange={setGamePath} />
           </Box>
         )}
       </Box>

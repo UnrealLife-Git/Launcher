@@ -67,6 +67,25 @@ function createWindow() {
     win.loadFile(path.join(RENDERER_DIST, 'index.html'))
   }
 
+  autoUpdater.on('checking-for-update', () => {
+    console.log('[AutoUpdater] Checking for update...');
+  });
+  autoUpdater.on('update-available', (info) => {
+    console.log('[AutoUpdater] Update available:', info);
+  });
+  autoUpdater.on('update-not-available', (info) => {
+    console.log('[AutoUpdater] Update not available:', info);
+  });
+  autoUpdater.on('error', (err) => {
+    console.error('[AutoUpdater] Error:', err);
+  });
+  autoUpdater.on('download-progress', (progressObj) => {
+    console.log('[AutoUpdater] Download progress:', progressObj);
+  });
+  autoUpdater.on('update-downloaded', (info) => {
+    console.log('[AutoUpdater] Update downloaded:', info);
+  });
+
   autoUpdater.checkForUpdatesAndNotify();
 }
 
