@@ -106,7 +106,7 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
     console.log(`  → Size    : ${localSize} (attendu: ${file.size})`);
 
     // On pousse en missing si manquant ou taille différente
-    if (!exists || localSize !== file.size) {
+    if (!exists) {
       otherMissing.push({
         name: file.name,
         size: file.size,
