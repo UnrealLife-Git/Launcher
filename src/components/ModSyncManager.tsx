@@ -94,22 +94,28 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
     const otherResources: Omit<ModEntry, 'source'>[] = await window.api.getOtherResources();
     const otherMissing: ModEntry[] = [];
     const otherBase = `${basePath}/@A3URL`;
-    
-    for (const file of otherResources) {
-      const fullPath = `${otherBase}/${file.name}`;
-      console.log(`[RECHECK FINAL] ${file.name} -> path: ${fullPath}`);
 
-      const exists = await window.api.checkFileExists(fullPath);
-      const size = await window.api.getFileSize(fullPath);
-      
-      if (!exists) {
-        console.warn(`[❗] Missing or mismatched: ${file.name} (exists: ${exists}, local: ${size}, expected: ${file.size})`);
-        otherMissing.push({ ...file, source: 'other' });
-        totalSize += file.size;
-      }
-      
-      //console.log(`[CHECK OTHER] ${file.name} - attendu: ${file.size} / trouvé: ${fullPath} / existe: ${exists}`);
+  for (const file of otherResources) {
+    const fullPath = `${otherBase}/${file.name}`;
+    const exists = await window.api.checkFileExists(fullPath);
+    const localSize = exists ? await window.api.getFileSize(fullPath) : 0;
+
+    console.log(`[CHECK OTHER] ${file.name}`);
+    console.log(`  → Path    : ${fullPath}`);
+    console.log(`  → Exists  : ${exists}`);
+    console.log(`  → Size    : ${localSize} (attendu: ${file.size})`);
+
+    // On pousse en missing si manquant ou taille différente
+    if (!exists || localSize !== file.size) {
+      otherMissing.push({
+        name: file.name,
+        size: file.size,
+        source: 'other'
+      });
+      totalSize += file.size;
+      console.warn(`[❗] Ajouté au téléchargement : ${file.name}`);
     }
+  }
     
     const allMissing = [...missing, ...otherMissing];
     console.log(allMissing);
