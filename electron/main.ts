@@ -253,11 +253,27 @@ ipcMain.handle('download-mod-file-stream', async (_event, fileName: string) => {
 
 ipcMain.handle('start-download', async (_event, { fileName, destination }) => {
   return new Promise((resolve, reject) => {
-    const url = `http://188.165.200.136/modsList/${fileName}`;
+    // On regarde l'extension
+    const isOtherResource = !fileName.endsWith('.pbo') && !fileName.endsWith('.bisign');
+    const baseUrl = isOtherResource
+      ? 'http://188.165.200.136/other_ressources'
+      : 'http://188.165.200.136/modsList';
+    const url = `${baseUrl}/${fileName}`;
     const filePath = path.join(destination, fileName);
     const file = fs.createWriteStream(filePath);
-    
+
     http.get(url, (res) => {
+      // ⚠️ Vérifie le code HTTP avant d'écrire
+      if (res.statusCode !== 200) {
+        file.close();
+        fs.unlink(filePath, () => {}); // On nettoie le fichier s'il existe
+        return reject(
+          new Error(
+            `[DOWNLOAD] Fichier introuvable sur le serveur : ${fileName} (HTTP ${res.statusCode})`
+          )
+        );
+      }
+
       const totalSize = parseInt(res.headers['content-length'] || '0', 10);
       let downloaded = 0;
 
@@ -281,6 +297,7 @@ ipcMain.handle('start-download', async (_event, { fileName, destination }) => {
     });
   });
 });
+
 
 ipcMain.handle('get-other-resources', async () => {
   const response = await fetch('http://188.165.200.136/other_ressources/');
