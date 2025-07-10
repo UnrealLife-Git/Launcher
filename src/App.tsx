@@ -20,6 +20,7 @@ import intranetIcon from '/assets/icons/intranet.png';
 import teamspeakIcon from '/assets/icons/teamspeak.png';
 import Snackbar from '@mui/material/Snackbar';
 import Alert from '@mui/material/Alert';
+import Tooltip from '@mui/material/Tooltip';
 
 const ICONS: Record<string, string> = {
   discord: discordIcon,
@@ -92,11 +93,12 @@ function MainApp({ gamePath, setGamePath }: { gamePath: string; setGamePath: (pa
       <AppBar
         position="static"
         elevation={0}
+        
         sx={{
           bgcolor: 'transparent',
           px: 2,
           pt: 1,
-          //'-webkit-app-region': 'drag',
+          '-webkit-app-region': 'drag',
           userSelect: 'none',
         }}
       >
@@ -105,7 +107,7 @@ function MainApp({ gamePath, setGamePath }: { gamePath: string; setGamePath: (pa
             <img src={Logo} alt="UnrealLife" height={90} />
           </Box>
 
-          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, /*'-webkit-app-region': 'no-drag'*/ }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 3, '-webkit-app-region': 'no-drag' }}>
             <Button color="inherit" onClick={() => setActiveTab('home')}>ACCUEIL</Button>
             <Button color="inherit" onClick={() => setActiveTab('news')}>NEWS</Button>
             <Button color="inherit" onClick={() => setActiveTab('settings')}>PARAMÈTRES</Button>
@@ -138,28 +140,37 @@ function MainApp({ gamePath, setGamePath }: { gamePath: string; setGamePath: (pa
               <Stack>
 
                 <Stack direction="row" spacing={3} sx={{ mt: 2 }}>
-                  {['discord', 'intranet', 'teamspeak'].map((icon) => (
+                {['discord', 'intranet', 'teamspeak'].map((icon) => {
+                  const tooltips: Record<string, string> = {
+                    discord: 'Rejoindre notre Discord',
+                    intranet: 'Accéder à l’Intranet',
+                    teamspeak: 'Télécharger Teamspeak',
+                  };
+                  return (
                     <Box key={icon} textAlign="center">
-                      <IconButton
-                        onClick={() => handleLinkClick(icon)}
-                        sx={{
-                          bgcolor: '#1c1c1c',
-                          borderRadius: '50%',
-                          width: 60,
-                          height: 60,
-                          boxShadow: '0 0 10px rgba(0,0,0,0.4)',
-                          transition: 'transform 0.2s ease',
-                          '&:hover': {
-                            transform: 'scale(1.05)',
-                            bgcolor: '#2a2a2a',
-                          },
-                        }}
-                      >
-                        <img src={ICONS[icon]} alt={icon} style={{ width: 42, height: 42 }} />
-                      </IconButton>
+                      <Tooltip title={tooltips[icon]} arrow>
+                        <IconButton
+                          onClick={() => handleLinkClick(icon)}
+                          sx={{
+                            bgcolor: '#1c1c1c',
+                            borderRadius: '50%',
+                            width: 60,
+                            height: 60,
+                            boxShadow: '0 0 10px rgba(0,0,0,0.4)',
+                            transition: 'transform 0.2s ease',
+                            '&:hover': {
+                              transform: 'scale(1.05)',
+                              bgcolor: '#2a2a2a',
+                            },
+                          }}
+                        >
+                          <img src={ICONS[icon]} alt={icon} style={{ width: 42, height: 42 }} />
+                        </IconButton>
+                      </Tooltip>
                     </Box>
-                  ))}
-                </Stack>
+                  );
+                })}
+              </Stack>
               </Stack>
             </Box>
           </Box>

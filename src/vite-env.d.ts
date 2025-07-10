@@ -3,10 +3,6 @@
 export { };
 
 declare global {
-  interface ModInfo {
-    name: string;
-    size: number;
-  }
 
   interface Window {
     electronAPI: {
@@ -38,6 +34,8 @@ declare global {
       getAppVersion: () => Promise<string>;
       listFiles: (directory: string) => Promise<string[]>;
       deleteFiles: (files: string[], directory: string) => Promise<string[]>;
+      getFileMTime: (filePath: string) => Promise<number | null>;
+      setFileMTime: (filePath: string, mtime: number) => Promise<boolean>;
 
     };
   }

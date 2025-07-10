@@ -10,6 +10,7 @@ import { Readable } from 'stream';
 import http from 'http';
 import { spawn } from 'child_process';
 import { autoUpdater } from 'electron-updater';
+import crypto from 'crypto';
 
 
 const require = createRequire(import.meta.url)
@@ -328,7 +329,7 @@ ipcMain.handle('launch-game', async (_, gamePath: string) => {
   let args = [
     '2', '1', '0',
     '-exe', armaExe,
-    '-malloc=jemalloc_bi_x6',
+    '-malloc=jemalloc_bi_x64',
     '-enableHT',
     '-mod=@A3URL',
     '-world=empty',
@@ -336,6 +337,9 @@ ipcMain.handle('launch-game', async (_, gamePath: string) => {
     '-noPause',
     '-noPauseAudio',
     '-skipIntro',
+    '-connect=188.165.200.136',
+    '-port=2302',
+    '-password=btrteam',
     '-BEservice'
   ];
 
@@ -380,4 +384,25 @@ ipcMain.handle('delete-files', async (_event, files: string[], directory: string
     } catch {}
   }
   return deleted;
+});
+// Dans le main process
+ipcMain.handle('fs:mtime', async (_event, filePath: string) => {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    const stats = fs.statSync(filePath);
+    // Attention, statSync(filePath).mtime.getTime() retourne des ms, alors que le bash retourne des secondes
+    return Math.floor(stats.mtime.getTime() / 1000);
+  } catch (e) {
+    return null;
+  }
+});
+
+ipcMain.handle('fs:setmtime', async (_event, filePath, mtime) => {
+  try {
+    fs.utimesSync(filePath, new Date(), new Date(mtime * 1000));
+    return true;
+  } catch (e) {
+    console.error('[SETMTIME]', e);
+    return false;
+  }
 });

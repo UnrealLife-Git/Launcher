@@ -4,6 +4,13 @@ interface ModEntry {
   name: string;
   size: number;
   source: 'mods' | 'other';
+  mtime?: number; // <- Ajouté pour suivi (facultatif ici)
+}
+
+interface ModInfo {
+  name: string;
+  size: number;
+  mtime: number; // <- Date de modif du serveur (en secondes UNIX)
 }
 
 interface ModSyncContextValue {
@@ -50,7 +57,7 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
       window.api.onProgress((data: ProgressPayload) => {
         setCurrentFile(data.fileName);
         setFileProgress(data.percent);
-  
+
         if (typeof data.receivedBytes === 'number' && data.fileName) {
           downloadedMap.current[data.fileName] = data.receivedBytes;
           const total = Object.values(downloadedMap.current).reduce((acc, val) => acc + val, 0);
@@ -63,60 +70,69 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
   }, []);
 
   const checkMods = async (basePath: string, onReadyToPlay: () => void) => {
-    const remoteMods: Omit<ModEntry, 'source'>[] = await window.api.getModsList();
+    const remoteMods: ModInfo[] = await window.api.getModsList();
     const localPath = `${basePath}/@A3URL/addons`;
     await window.api.ensureDirectory(localPath);
 
     const missing: ModEntry[] = [];
     let totalSize = 0;
 
-    // --- Ajout : récupère la liste des fichiers locaux
+    // Suppression des fichiers obsolètes (inchangé)
     const localFiles = await window.api.listFiles(localPath);
     const remoteNames = new Set(remoteMods.map(m => m.name));
     const toDelete = localFiles.filter((f: string) => !remoteNames.has(f));
-
     if (toDelete.length > 0) {
       await window.api.deleteFiles(toDelete, localPath);
       console.log(`[CLEAN] Fichiers obsolètes supprimés :`, toDelete);
     }
 
+    // Vérification fichiers mods via mtime
     for (const mod of remoteMods) {
       const filePath = `${localPath}/${mod.name}`;
       const exists = await window.api.checkFileExists(filePath);
-      const size = await window.api.getFileSize(filePath);
+      let needsUpdate = false;
 
-      if (!exists || size !== mod.size) {
-        missing.push({ ...mod, source: 'mods' });
+      if (!exists) {
+        needsUpdate = true;
+      } else {
+        const localMTime = await window.api.getFileMTime(filePath);
+        if (localMTime !== mod.mtime) {
+          needsUpdate = true;
+          console.log(`[MTIME] Différence détectée pour ${mod.name} → local: ${localMTime}, remote: ${mod.mtime}`);
+        }
+      }
+      if (needsUpdate) {
+        missing.push({ name: mod.name, size: mod.size, source: 'mods', mtime: mod.mtime });
         totalSize += mod.size;
       }
     }
 
-    const otherResources: Omit<ModEntry, 'source'>[] = await window.api.getOtherResources();
+    // Vérification autres fichiers ("other resources")
+    // On peut garder la vérif classique sur la taille ou ajouter mtime si tu ajoutes cette info côté serveur.
+    const otherResources: { name: string; size: number }[] = await window.api.getOtherResources();
     const otherMissing: ModEntry[] = [];
     const otherBase = `${basePath}/@A3URL`;
 
-  for (const file of otherResources) {
-    const fullPath = `${otherBase}/${file.name}`;
-    const exists = await window.api.checkFileExists(fullPath);
-    const localSize = exists ? await window.api.getFileSize(fullPath) : 0;
+    for (const file of otherResources) {
+      const fullPath = `${otherBase}/${file.name}`;
+      const exists = await window.api.checkFileExists(fullPath);
+      const localSize = exists ? await window.api.getFileSize(fullPath) : 0;
 
-    console.log(`[CHECK OTHER] ${file.name}`);
-    console.log(`  → Path    : ${fullPath}`);
-    console.log(`  → Exists  : ${exists}`);
-    console.log(`  → Size    : ${localSize} (attendu: ${file.size})`);
-
-    // On pousse en missing si manquant ou taille différente
-    if (!exists) {
-      otherMissing.push({
-        name: file.name,
-        size: file.size,
-        source: 'other'
-      });
-      totalSize += file.size;
-      console.warn(`[❗] Ajouté au téléchargement : ${file.name}`);
+      if (!exists || localSize !== file.size) {
+        otherMissing.push({
+          name: file.name,
+          size: file.size,
+          source: 'other',
+        });
+        totalSize += file.size;
+        if (!exists) {
+          console.warn(`[❗] Ajouté au téléchargement : ${file.name}`);
+        } else {
+          console.warn(`[❗] Taille différente pour ${file.name} : ${localSize} != ${file.size}`);
+        }
+      }
     }
-  }
-    
+
     const allMissing = [...missing, ...otherMissing];
     console.log(allMissing);
     setModsToDownload(allMissing);
@@ -139,17 +155,17 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
 
     for (let i = 0; i < modsToDownload.length; i++) {
       const mod = modsToDownload[i];
-    
-      // Choix du bon dossier
-      const isFromOtherResources = !mod.name.endsWith('.pbo') && !mod.name.endsWith('.bisign');
+      const isFromOtherResources = mod.source === 'other';
       const destination = isFromOtherResources
         ? `${basePath}/@A3URL`
         : `${basePath}/@A3URL/addons`;
-    
+
       await window.api.startDownload({ fileName: mod.name, destination });
+      if (mod.mtime) {
+        await window.api.setFileMTime(`${destination}/${mod.name}`, mod.mtime);
+      }
       setProgress(Math.round(((i + 1) / modsToDownload.length) * 100));
     }
-    
 
     setIsDownloading(false);
     await checkMods(basePath, () => setModsReady(true));
