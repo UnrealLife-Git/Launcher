@@ -26,39 +26,6 @@ jobs:
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-  build-linux:
-    runs-on: ubuntu-latest
-    steps:
-      - name: 📥 Checkout code
-        uses: actions/checkout@v3
-      - name: 🟢 Setup Node.js
-        uses: actions/setup-node@v3
-        with:
-          node-version: 18
-      - name: 📦 Install dependencies
-        run: npm ci
-      - name: Install snapd
-        run: sudo apt-get update && sudo apt-get install -y snapd
-
-      - name: Ensure snapd is running
-        run: |
-          sudo systemctl start snapd
-          sudo systemctl enable snapd
-          # Attendre que snapd soit prêt
-          sudo snap install core || true
-          sleep 20
-
-      - name: Install snapcraft
-        run: sudo snap install snapcraft --classic
-      - name: 🛠 Build App
-        run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-      - name: Publish with electron-builder (Linux)
-        run: npx electron-builder --linux AppImage snap --publish always
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
   build-mac:
     runs-on: macos-latest
     steps:
