@@ -6,27 +6,62 @@ on:
       - 'v*' # Exemple : v1.0.2
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
       - name: 📦 Install dependencies
         run: npm ci
-
       - name: 🛠 Build App
         run: npm run build
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
-
-      - name: Publish with electron-builder
+      - name: Publish with electron-builder (Windows)
         run: npx electron-builder --windows nsis --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build-linux:
+    runs-on: ubuntu-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🛠 Build App
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Publish with electron-builder (Linux)
+        run: npx electron-builder --linux AppImage --publish always
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🛠 Build App
+        run: npm run build
+        env:
+          GH_TOKEN: ${{ secrets.GH_TOKEN }}
+      - name: Publish with electron-builder (Mac)
+        run: npx electron-builder --mac --publish always
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
