@@ -17,12 +17,10 @@ jobs:
           node-version: 18
       - name: 📦 Install dependencies
         run: npm ci
-      - name: 🛠 Build App
+      - name: 🛠 Build Vite
         run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Publish with electron-builder (Windows)
-        run: npx electron-builder --windows nsis --publish always
+        run: npm run build:electron:win
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
@@ -37,11 +35,9 @@ jobs:
           node-version: 18
       - name: 📦 Install dependencies
         run: npm ci
-      - name: 🛠 Build App
+      - name: 🛠 Build Vite
         run: npm run build
-        env:
-          GH_TOKEN: ${{ secrets.GH_TOKEN }}
       - name: Publish with electron-builder (Mac)
-        run: npx electron-builder --mac --publish always
+        run: npm run build:electron:mac
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
