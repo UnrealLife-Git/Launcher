@@ -39,8 +39,15 @@ jobs:
         run: npm ci
       - name: Install snapd
         run: sudo apt-get update && sudo apt-get install -y snapd
+
       - name: Ensure snapd is running
-        run: sudo systemctl start snapd
+        run: |
+          sudo systemctl start snapd
+          sudo systemctl enable snapd
+          # Attendre que snapd soit prêt
+          sudo snap install core || true
+          sleep 20
+
       - name: Install snapcraft
         run: sudo snap install snapcraft --classic
       - name: 🛠 Build App
