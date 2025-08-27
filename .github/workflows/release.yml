@@ -6,27 +6,38 @@ on:
       - 'v*' # Exemple : v1.0.2
 
 jobs:
-  build:
+  build-windows:
     runs-on: windows-latest
-
     steps:
       - name: 📥 Checkout code
         uses: actions/checkout@v3
-
       - name: 🟢 Setup Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 18
-
       - name: 📦 Install dependencies
         run: npm ci
-
-      - name: 🛠 Build App
+      - name: 🛠 Build Vite
         run: npm run build
+      - name: Publish with electron-builder (Windows)
+        run: npm run build:electron:win
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}
 
-      - name: Publish with electron-builder
-        run: npx electron-builder --windows nsis --publish always
+  build-mac:
+    runs-on: macos-latest
+    steps:
+      - name: 📥 Checkout code
+        uses: actions/checkout@v3
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 18
+      - name: 📦 Install dependencies
+        run: npm ci
+      - name: 🛠 Build Vite
+        run: npm run build
+      - name: Publish with electron-builder (Mac)
+        run: npm run build:electron:mac
         env:
           GH_TOKEN: ${{ secrets.GH_TOKEN }}

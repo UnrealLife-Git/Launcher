@@ -1,7 +1,7 @@
 {
   "name": "unreallife-launcher",
   "private": true,
-  "version": "1.1.5",
+  "version": "1.1.12",
   "type": "module",
   "main": "dist-electron/main.js",
   "author": "Lielce",
@@ -47,12 +47,15 @@
     }
   },
   "scripts": {
-    "dev": "vite",
-    "build": "vite build && electron-builder",
-    "dist": "electron-builder --windows nsis --publish always",
-    "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
-    "preview": "vite preview",
-    "build:preload": "esbuild electron/preload.ts --bundle --platform=node --outfile=dist-electron/preload.mjs --format=esm"
+  "dev": "vite",
+  "build": "vite build",
+  "build:electron:win": "electron-builder --windows nsis --publish always",
+  "build:electron:mac": "electron-builder --mac --publish always",
+  "build:electron:linux": "electron-builder --linux AppImage snap --publish always",
+  "dist": "electron-builder --windows nsis --publish always",
+  "lint": "eslint . --ext ts,tsx --report-unused-disable-directives --max-warnings 0",
+  "preview": "vite preview",
+  "build:preload": "esbuild electron/preload.ts --bundle --platform=node --outfile=dist-electron/preload.mjs --format=esm"
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
