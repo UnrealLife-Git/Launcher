@@ -337,7 +337,7 @@ ipcMain.handle('launch-game', async (_, gamePath: string) => {
     '-noPause',
     '-noPauseAudio',
     '-skipIntro',
-    '-connect=188.165.200.136',
+    '-connect=91.134.62.7',
     '-port=2302',
     '-password=btrteam',
     '-BEservice'
