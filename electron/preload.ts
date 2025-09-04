@@ -56,8 +56,9 @@ contextBridge.exposeInMainWorld('api', {
   getAppVersion: () => ipcRenderer.invoke('get-app-version'),
   listFiles: (directory: string) => ipcRenderer.invoke('list-files', directory),
   deleteFiles: (files: string[], directory: string) => ipcRenderer.invoke('delete-files', files, directory),
-  getFileMTime: (filePath: string) => ipcRenderer.invoke('fs:mtime', filePath),
-  setFileMTime: (filePath: string, mtime: number) => ipcRenderer.invoke('fs:setmtime', filePath, mtime),
+  getFileChecksum: (filePath: string) => ipcRenderer.invoke('fs:checksum', filePath),
+  getFileChecksumSmart: (filePath: string, expectedSize: number) => ipcRenderer.invoke('fs:checksum-smart', filePath, expectedSize),
+  getFileChecksumBatch: (filePaths: string[]) => ipcRenderer.invoke('fs:checksum-batch', filePaths),
 
 
 });

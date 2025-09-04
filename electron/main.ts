@@ -146,6 +146,169 @@ ipcMain.handle('get-news-md', async () => {
   return text;
 });
 
+// Cache des hash pour éviter les recalculs avec persistance sur disque
+const hashCache = new Map<string, { hash: string, mtime: number, size: number }>();
+const CACHE_FILE = path.join(app.getPath('userData'), 'hash-cache.json');
+
+// Charger le cache au démarrage
+function loadHashCache() {
+  try {
+    if (fs.existsSync(CACHE_FILE)) {
+      const cacheData = JSON.parse(fs.readFileSync(CACHE_FILE, 'utf8'));
+      for (const [key, value] of Object.entries(cacheData)) {
+        hashCache.set(key, value as { hash: string, mtime: number, size: number });
+      }
+      console.log(`[CACHE] Chargé ${hashCache.size} entrées depuis le disque`);
+    }
+  } catch (error) {
+    console.warn('[CACHE] Erreur lors du chargement:', error);
+  }
+}
+
+// Sauvegarder le cache sur disque
+function saveHashCache() {
+  try {
+    const cacheData = Object.fromEntries(hashCache);
+    fs.writeFileSync(CACHE_FILE, JSON.stringify(cacheData, null, 2));
+    console.log(`[CACHE] Sauvegardé ${hashCache.size} entrées sur disque`);
+  } catch (error) {
+    console.warn('[CACHE] Erreur lors de la sauvegarde:', error);
+  }
+}
+
+// Charger le cache au démarrage de l'application
+loadHashCache();
+
+ipcMain.handle('fs:checksum-smart', async (_event, filePath: string, expectedSize: number) => {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    
+    const stats = fs.statSync(filePath);
+    const cacheKey = `${filePath}:${stats.size}:${Math.floor(stats.mtime.getTime() / 1000)}`;
+    
+    // Vérifier le cache d'abord
+    if (hashCache.has(cacheKey)) {
+      const cached = hashCache.get(cacheKey)!;
+      console.log(`[CACHE_HIT] ${path.basename(filePath)}: ${cached.hash}`);
+      return cached.hash;
+    }
+    
+    // Vérification rapide de la taille avant calcul du hash
+    if (stats.size !== expectedSize) {
+      console.log(`[SIZE_SKIP] ${path.basename(filePath)}: taille ${stats.size} != ${expectedSize}`);
+      return 'SIZE_MISMATCH';
+    }
+    
+    console.log(`[HASH_CALC] Calcul hash pour ${path.basename(filePath)} (${(stats.size / 1024 / 1024).toFixed(1)} MB)`);
+    
+    const hash = crypto.createHash('md5');
+    const stream = fs.createReadStream(filePath, { 
+      highWaterMark: 128 * 1024 // Buffer plus gros pour fichiers volumineux
+    });
+    
+    return new Promise((resolve, reject) => {
+      stream.on('data', data => hash.update(data));
+      stream.on('end', () => {
+        const result = hash.digest('hex');
+        
+        // Mettre en cache
+        hashCache.set(cacheKey, { 
+          hash: result, 
+          mtime: Math.floor(stats.mtime.getTime() / 1000), 
+          size: stats.size 
+        });
+        
+        // Sauvegarder le cache périodiquement (tous les 50 nouveaux hash)
+        if (hashCache.size % 50 === 0) {
+          saveHashCache();
+        }
+        
+        console.log(`[HASH_OK] ${path.basename(filePath)}: ${result}`);
+        resolve(result);
+      });
+      stream.on('error', reject);
+    });
+  } catch (error) {
+    console.error(`[HASH_ERROR] ${filePath}:`, error);
+    return null;
+  }
+});
+
+// Sauvegarder le cache avant fermeture de l'application
+app.on('before-quit', () => {
+  saveHashCache();
+});
+
+ipcMain.handle('fs:checksum-batch', async (_event, filePaths: string[]) => {
+  const results: { [filePath: string]: string | null } = {};
+  
+  // Traiter les fichiers en parallèle avec une limite
+  const CONCURRENT_LIMIT = 5;
+  const chunks: string[][] = [];
+  
+  for (let i = 0; i < filePaths.length; i += CONCURRENT_LIMIT) {
+    chunks.push(filePaths.slice(i, i + CONCURRENT_LIMIT));
+  }
+  
+  for (const chunk of chunks) {
+    const chunkPromises = chunk.map(async (filePath) => {
+      try {
+        if (!fs.existsSync(filePath)) return { filePath, hash: null };
+        
+        const hash = crypto.createHash('md5');
+        const stream = fs.createReadStream(filePath, { 
+          highWaterMark: 64 * 1024 
+        });
+        
+        const result = await new Promise<string>((resolve, reject) => {
+          stream.on('data', data => hash.update(data));
+          stream.on('end', () => resolve(hash.digest('hex')));
+          stream.on('error', reject);
+        });
+        
+        return { filePath, hash: result };
+      } catch (e) {
+        console.error(`[CHECKSUM_BATCH] Erreur pour ${path.basename(filePath)}:`, e);
+        return { filePath, hash: null };
+      }
+    });
+    
+    const chunkResults = await Promise.all(chunkPromises);
+    chunkResults.forEach(({ filePath, hash }) => {
+      results[filePath] = hash;
+    });
+  }
+  
+  return results;
+});
+
+ipcMain.handle('fs:checksum', async (_event, filePath: string) => {
+  try {
+    if (!fs.existsSync(filePath)) return null;
+    
+    const hash = crypto.createHash('md5');
+    const stream = fs.createReadStream(filePath, { 
+      highWaterMark: 64 * 1024 // Buffer de 64KB pour optimiser la lecture
+    });
+    
+    return new Promise((resolve, reject) => {
+      stream.on('data', data => hash.update(data));
+      stream.on('end', () => {
+        const result = hash.digest('hex');
+        console.log(`[CHECKSUM] ${path.basename(filePath)}: ${result}`);
+        resolve(result);
+      });
+      stream.on('error', (err) => {
+        console.error(`[CHECKSUM] Erreur pour ${path.basename(filePath)}:`, err);
+        reject(err);
+      });
+    });
+  } catch (e) {
+    console.error('[CHECKSUM] Erreur:', e);
+    return null;
+  }
+});
+
 ipcMain.handle('get-mods-list', async () => {
   const res = await fetch('http://188.165.200.136/modsList/modsList.json');
   const json = await res.json();
@@ -397,9 +560,30 @@ ipcMain.handle('fs:mtime', async (_event, filePath: string) => {
   }
 });
 
+ipcMain.handle('fs:debug-mtime', async (_event, filePath: string) => {
+  try {
+    if (!fs.existsSync(filePath)) return { error: 'File does not exist' };
+    const stats = fs.statSync(filePath);
+    return {
+      mtime: Math.floor(stats.mtime.getTime() / 1000),
+      mtimeMs: stats.mtime.getTime(),
+      atime: Math.floor(stats.atime.getTime() / 1000),
+      ctime: Math.floor(stats.ctime.getTime() / 1000),
+      size: stats.size,
+      mtimeString: stats.mtime.toISOString()
+    };
+  } catch (e) {
+    return { error: (e as Error).message };
+  }
+});
+
 ipcMain.handle('fs:setmtime', async (_event, filePath, mtime) => {
   try {
-    fs.utimesSync(filePath, new Date(), new Date(mtime * 1000));
+    // Conserver l'atime existant et ne modifier que le mtime
+    const stats = fs.statSync(filePath);
+    const newMtime = new Date(mtime * 1000);
+    fs.utimesSync(filePath, stats.atime, newMtime);
+    console.log(`[SETMTIME] ${path.basename(filePath)}: ${mtime} (${newMtime.toISOString()})`);
     return true;
   } catch (e) {
     console.error('[SETMTIME]', e);

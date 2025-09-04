@@ -13,9 +13,12 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
     checkMods,
     downloadMods,
     isDownloading,
+    isVerifying,
     currentFile,
+    currentVerifyingFile,
     fileProgress,
     progress,
+    verificationProgress,
     formatRemainingTime,
     modsReady
   } = useModSync();
@@ -55,6 +58,25 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
 
   return (
     <Box sx={{ mt: 3 }}>
+      {isVerifying && (
+        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+          <Box sx={{ flex: 1 }}>
+            <Typography variant="body2">
+              Vérification de : <strong>{currentVerifyingFile}</strong>
+            </Typography>
+            <Typography variant="body2">
+              Progression globale : {verificationProgress}% - Vérification des mods
+            </Typography>
+            <LinearProgress
+              variant="determinate"
+              value={verificationProgress}
+              sx={{ my: 1, height: 8, borderRadius: 4 }}
+              color="info"
+            />
+          </Box>
+        </Box>
+      )}
+
       {isDownloading && (
         <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
           <Box sx={{ flex: 1 }}>
@@ -62,7 +84,7 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
               Téléchargement de : <strong>{currentFile}</strong> ({fileProgress}%)
             </Typography>
             <Typography variant="body2">
-              Progression globale : {progress}%
+              Progression globale : {progress}% - Temps restant: {formatRemainingTime()}
             </Typography>
             <LinearProgress
               variant="determinate"
@@ -79,7 +101,7 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
         </Box>
       )}
 
-      {shouldShowUpdateButton && (
+      {!isVerifying && shouldShowUpdateButton && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Typography variant="body2">
             {modsToDownload.length} fichier(s) à mettre à jour
@@ -93,7 +115,7 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
         </Box>
       )}
 
-      {shouldShowPlayButton && (
+      {!isVerifying && shouldShowPlayButton && (
         <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
           <Box>
             <Typography variant="body2">Tous les fichiers sont à jour.</Typography>

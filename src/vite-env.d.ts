@@ -2,6 +2,12 @@
 
 export { };
 
+interface ModInfo {
+  name: string;
+  size: number;
+  hash?: string; // Hash optionnel pendant la migration
+}
+
 declare global {
 
   interface Window {
@@ -34,8 +40,9 @@ declare global {
       getAppVersion: () => Promise<string>;
       listFiles: (directory: string) => Promise<string[]>;
       deleteFiles: (files: string[], directory: string) => Promise<string[]>;
-      getFileMTime: (filePath: string) => Promise<number | null>;
-      setFileMTime: (filePath: string, mtime: number) => Promise<boolean>;
+      getFileChecksum: (filePath: string) => Promise<string | null>;
+      getFileChecksumSmart: (filePath: string, expectedSize: number) => Promise<string | null>;
+      getFileChecksumBatch: (filePaths: string[]) => Promise<{ [filePath: string]: string | null }>;
 
     };
   }
