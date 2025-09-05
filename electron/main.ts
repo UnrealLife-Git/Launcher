@@ -207,12 +207,12 @@ ipcMain.handle('fs:checksum-smart', async (_event, filePath: string, expectedSiz
     const stats = fs.statSync(filePath);
     const cacheKey = `${filePath}:${stats.size}:${Math.floor(stats.mtime.getTime() / 1000)}`;
     
-    // Vérifier le cache d'abord
-    if (hashCache.has(cacheKey)) {
-      const cached = hashCache.get(cacheKey)!;
-      console.log(`[CACHE_HIT] ${path.basename(filePath)}: ${cached.hash}`);
-      return cached.hash;
-    }
+    // DÉSACTIVÉ TEMPORAIREMENT : Vérifier le cache d'abord
+    // if (hashCache.has(cacheKey)) {
+    //   const cached = hashCache.get(cacheKey)!;
+    //   console.log(`[CACHE_HIT] ${path.basename(filePath)}: ${cached.hash}`);
+    //   return cached.hash;
+    // }
     
     // Vérification rapide de la taille avant calcul du hash
     if (stats.size !== expectedSize) {

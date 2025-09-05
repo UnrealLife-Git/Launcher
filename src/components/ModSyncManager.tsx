@@ -106,7 +106,7 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
         console.log(`[CLEAN] Fichiers obsolètes supprimés :`, toDelete);
       }
 
-      console.log(`[SMART_CACHE] Vérification rapide de ${remoteMods.length} fichiers avec cache intelligent...`);
+      console.log(`[SMART_CACHE] Vérification FORCÉE de ${remoteMods.length} fichiers (cache désactivé pour tests)...`);
     
     for (let i = 0; i < remoteMods.length; i++) {
       const mod = remoteMods[i];
@@ -128,13 +128,15 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
         console.log(`[NO_HASH] ${mod.name}`);
       } else {
         // Utilisation du smart cache : taille + hash avec cache
+        console.log(`[DEBUG] 🔍 Vérification FORCÉE du hash pour ${mod.name}...`);
         const localHash = await window.api.getFileChecksumSmart(filePath, mod.size);
+        console.log(`[DEBUG] 📊 Hash calculé: ${localHash}, attendu: ${mod.hash}`);
         
         if (localHash !== mod.hash) {
           needsUpdate = true;
-          console.log(`[HASH_DIFF] ${mod.name} → hash différent`);
+          console.log(`[HASH_DIFF] ❌ ${mod.name} → hash différent`);
         } else {
-          console.log(`[OK] ${mod.name} ✓`);
+          console.log(`[OK] ✅ ${mod.name} → hash identique`);
         }
       }
       
