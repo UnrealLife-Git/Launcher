@@ -26,12 +26,14 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
   const [isPlayDisabled, setIsPlayDisabled] = useState(false);
   const [launching, setLaunching] = useState(false);
   const [checkingAfterLaunch, setCheckingAfterLaunch] = useState(false);
+  const [hasInitialCheck, setHasInitialCheck] = useState(false);
 
   useEffect(() => {
-    if (basePath) {
+    if (basePath && !hasInitialCheck && !isVerifying) {
+      setHasInitialCheck(true);
       checkMods(basePath, onReadyToPlay);
     }
-  }, [basePath]);
+  }, [basePath, hasInitialCheck, isVerifying]);
 
   const launchGame = async () => {
     setIsPlayDisabled(true);
@@ -59,21 +61,22 @@ export default function ModSyncPanel({ basePath, onReadyToPlay }: Props) {
   return (
     <Box sx={{ mt: 3 }}>
       {isVerifying && (
-        <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-          <Box sx={{ flex: 1 }}>
-            <Typography variant="body2">
-              Vérification de : <strong>{currentVerifyingFile}</strong>
-            </Typography>
-            <Typography variant="body2">
-              Progression globale : {verificationProgress}% - Vérification des mods
-            </Typography>
-            <LinearProgress
-              variant="determinate"
-              value={verificationProgress}
-              sx={{ my: 1, height: 8, borderRadius: 4 }}
-              color="info"
-            />
-          </Box>
+        <Box sx={{ mb: 2 }}>
+          <Typography variant="body2" sx={{ mb: 1 }}>
+            <strong>Vérification en cours...</strong>
+          </Typography>
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 1 }}>
+            {currentVerifyingFile}
+          </Typography>
+          <LinearProgress
+            variant="determinate"
+            value={verificationProgress}
+            sx={{ height: 8, borderRadius: 4, backgroundColor: '#e0e0e0' }}
+            color="info"
+          />
+          <Typography variant="caption" sx={{ mt: 0.5, display: 'block' }}>
+            {verificationProgress}% terminé
+          </Typography>
         </Box>
       )}
 

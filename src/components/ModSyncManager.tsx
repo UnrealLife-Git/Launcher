@@ -57,6 +57,7 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
   const [totalBytes, setTotalBytes] = useState(0);
 
   const downloadedMap = useRef<{ [key: string]: number }>({});
+  const isCheckingRef = useRef(false);
 
   useEffect(() => {
     if (window.api?.onProgress) {
@@ -76,28 +77,36 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
   }, []);
 
   const checkMods = async (basePath: string, onReadyToPlay: () => void) => {
+    // Empêcher les appels simultanés
+    if (isCheckingRef.current || isVerifying) {
+      console.log('[SKIP] Vérification déjà en cours, appel ignoré');
+      return;
+    }
+
+    isCheckingRef.current = true;
     setIsVerifying(true);
     setVerificationProgress(0);
     setCurrentVerifyingFile(null);
     
-    const remoteMods: ModInfo[] = await window.api.getModsList();
-    const localPath = `${basePath}/@A3URL/addons`;
-    await window.api.ensureDirectory(localPath);
+    try {
+      const remoteMods: ModInfo[] = await window.api.getModsList();
+      const localPath = `${basePath}/@A3URL/addons`;
+      await window.api.ensureDirectory(localPath);
 
-    const missing: ModEntry[] = [];
-    let totalSize = 0;
+      const missing: ModEntry[] = [];
+      let totalSize = 0;
 
-    // Suppression des fichiers obsolètes
-    setCurrentVerifyingFile('Nettoyage des fichiers obsolètes...');
-    const localFiles = await window.api.listFiles(localPath);
-    const remoteNames = new Set(remoteMods.map(m => m.name));
-    const toDelete = localFiles.filter((f: string) => !remoteNames.has(f));
-    if (toDelete.length > 0) {
-      await window.api.deleteFiles(toDelete, localPath);
-      console.log(`[CLEAN] Fichiers obsolètes supprimés :`, toDelete);
-    }
+      // Suppression des fichiers obsolètes
+      setCurrentVerifyingFile('Nettoyage des fichiers obsolètes...');
+      const localFiles = await window.api.listFiles(localPath);
+      const remoteNames = new Set(remoteMods.map(m => m.name));
+      const toDelete = localFiles.filter((f: string) => !remoteNames.has(f));
+      if (toDelete.length > 0) {
+        await window.api.deleteFiles(toDelete, localPath);
+        console.log(`[CLEAN] Fichiers obsolètes supprimés :`, toDelete);
+      }
 
-    console.log(`[SMART_CACHE] Vérification rapide de ${remoteMods.length} fichiers avec cache intelligent...`);
+      console.log(`[SMART_CACHE] Vérification rapide de ${remoteMods.length} fichiers avec cache intelligent...`);
     
     for (let i = 0; i < remoteMods.length; i++) {
       const mod = remoteMods[i];
@@ -185,6 +194,14 @@ export function ModSyncManager({ basePath, children }: { basePath: string; child
         onReadyToPlay();
       }
     }, 500);
+    
+    } catch (error) {
+      console.error('[CHECK_MODS] Erreur lors de la vérification:', error);
+      setIsVerifying(false);
+      setCurrentVerifyingFile(null);
+    } finally {
+      isCheckingRef.current = false;
+    }
   };
 
   const downloadMods = async () => {

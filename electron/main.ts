@@ -179,6 +179,27 @@ function saveHashCache() {
 // Charger le cache au démarrage de l'application
 loadHashCache();
 
+// Vider le cache
+function clearHashCache() {
+  try {
+    // Vider le cache en mémoire
+    hashCache.clear();
+    
+    // Supprimer le fichier de cache
+    if (fs.existsSync(CACHE_FILE)) {
+      fs.unlinkSync(CACHE_FILE);
+      console.log('[CACHE] Cache vidé et fichier supprimé');
+    } else {
+      console.log('[CACHE] Cache vidé (aucun fichier à supprimer)');
+    }
+    
+    return true;
+  } catch (error) {
+    console.warn('[CACHE] Erreur lors du vidage:', error);
+    return false;
+  }
+}
+
 ipcMain.handle('fs:checksum-smart', async (_event, filePath: string, expectedSize: number) => {
   try {
     if (!fs.existsSync(filePath)) return null;
@@ -589,4 +610,9 @@ ipcMain.handle('fs:setmtime', async (_event, filePath, mtime) => {
     console.error('[SETMTIME]', e);
     return false;
   }
+});
+
+// Handler pour vider le cache
+ipcMain.handle('clear-cache', async () => {
+  return clearHashCache();
 });

@@ -59,6 +59,7 @@ contextBridge.exposeInMainWorld('api', {
   getFileChecksum: (filePath: string) => ipcRenderer.invoke('fs:checksum', filePath),
   getFileChecksumSmart: (filePath: string, expectedSize: number) => ipcRenderer.invoke('fs:checksum-smart', filePath, expectedSize),
   getFileChecksumBatch: (filePaths: string[]) => ipcRenderer.invoke('fs:checksum-batch', filePaths),
+  clearCache: () => ipcRenderer.invoke('clear-cache'),
 
 
 });

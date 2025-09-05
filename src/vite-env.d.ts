@@ -43,6 +43,7 @@ declare global {
       getFileChecksum: (filePath: string) => Promise<string | null>;
       getFileChecksumSmart: (filePath: string, expectedSize: number) => Promise<string | null>;
       getFileChecksumBatch: (filePaths: string[]) => Promise<{ [filePath: string]: string | null }>;
+      clearCache: () => Promise<boolean>;
 
     };
   }

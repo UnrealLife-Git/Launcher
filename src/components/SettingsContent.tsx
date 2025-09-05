@@ -5,6 +5,8 @@ export default function SettingsContent({ onGamePathChange }: { onGamePathChange
   const [gamePath, setGamePath] = useState('');
   const [error, setError] = useState('');
   const [launcherVersion, setLauncherVersion] = useState<string>('dev');
+  const [cacheClearing, setCacheClearing] = useState(false);
+  const [cacheMessage, setCacheMessage] = useState('');
 
   // Valeur par défaut
   const defaultPath = 'C:\\Program Files (x86)\\Steam\\steamapps\\common\\Arma 3';
@@ -43,6 +45,27 @@ export default function SettingsContent({ onGamePathChange }: { onGamePathChange
     }
   };
 
+  const handleClearCache = async () => {
+    setCacheClearing(true);
+    setCacheMessage('');
+    
+    try {
+      const success = await window.api.clearCache?.();
+      if (success) {
+        setCacheMessage('Cache vidé avec succès !');
+      } else {
+        setCacheMessage('Erreur lors du vidage du cache.');
+      }
+    } catch (e) {
+      console.error('Erreur lors du vidage du cache:', e);
+      setCacheMessage('Erreur lors du vidage du cache.');
+    } finally {
+      setCacheClearing(false);
+      // Effacer le message après 3 secondes
+      setTimeout(() => setCacheMessage(''), 3000);
+    }
+  };
+
   return (
     <Box sx={{ px: 4, py: 2 }}>
       <Typography variant="h5" gutterBottom>
@@ -76,6 +99,38 @@ export default function SettingsContent({ onGamePathChange }: { onGamePathChange
           <Button variant="outlined" onClick={handleBrowse}>PARCOURIR</Button>
           <Button variant="contained" onClick={handleSave}>SAUVEGARDER</Button>
         </Stack>
+        
+        {/* Section pour vider le cache */}
+        <Box sx={{ mt: 4, pt: 2, borderTop: '1px solid #333' }}>
+          <Typography variant="h6" gutterBottom sx={{ color: 'white' }}>
+            Cache du launcher
+          </Typography>
+          <Typography variant="body2" sx={{ color: 'gray', mb: 2 }}>
+            Le cache permet d'accélérer la vérification de vos addons. 
+            Vider le cache forcera une nouvelle vérification complète des mods.
+          </Typography>
+          
+          <Button 
+            variant="outlined" 
+            onClick={handleClearCache}
+            disabled={cacheClearing}
+            sx={{ color: 'orange', borderColor: 'orange' }}
+          >
+            {cacheClearing ? 'VIDAGE EN COURS...' : 'VIDER LE CACHE'}
+          </Button>
+          
+          {cacheMessage && (
+            <Typography 
+              variant="body2" 
+              sx={{ 
+                mt: 1, 
+                color: cacheMessage.includes('succès') ? 'green' : 'red' 
+              }}
+            >
+              {cacheMessage}
+            </Typography>
+          )}
+        </Box>
       </Stack>
       {/* Numéro de version en bas de page */}
       <Box sx={{ position: 'absolute', bottom: 8, left: 0, width: '100%', textAlign: 'center', color: 'gray' }}>
